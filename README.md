@@ -7,7 +7,7 @@ A containerized ComfyUI deployment with Docker and Kubernetes support.
 ### Local Development
 ```bash
 git clone https://github.com/hustshawn/comfyui-customization.git
-cd comfy-ui-build
+cd comfyui-customization
 docker compose up --build
 ```
 
