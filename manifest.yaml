@@ -1,0 +1,168 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: comfyui-inputs-pv
+spec:
+  capacity:
+    storage: 1200Gi # ignored, required
+  accessModes:
+    - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
+  mountOptions:
+    - allow-delete
+    - region us-west-2
+  csi:
+    driver: s3.csi.aws.com # required
+    volumeHandle: s3-csi-driver-volume-inputs # need to be unique
+    volumeAttributes:
+      bucketName: comfyui-inputs-20250915-us-west-2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: comfyui-inputs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
+  storageClassName: "" # required for static provisioning
+  resources:
+    requests:
+      storage: 1200Gi # ignored, required
+  volumeName: comfyui-inputs-pv
+
+
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: comfyui-outputs-pv
+spec:
+  capacity:
+    storage: 1200Gi # ignored, required
+  accessModes:
+    - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
+  mountOptions:
+    - allow-delete
+    - region us-west-2
+  csi:
+    driver: s3.csi.aws.com # required
+    volumeHandle: s3-csi-driver-volume-outputs # need to be unique
+    volumeAttributes:
+      bucketName: comfyui-outputs-20250915-us-west-2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: comfyui-outputs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
+  storageClassName: "" # required for static provisioning
+  resources:
+    requests:
+      storage: 1200Gi # ignored, required
+  volumeName: comfyui-outputs-pv
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: comfyui
+spec:
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: comfyui
+  template:
+    metadata:
+      labels:
+        app: comfyui
+    spec:
+      securityContext:
+        fsGroup: 1000
+        fsGroupChangePolicy: "Always"
+      nodeSelector:
+        node.kubernetes.io/instance-type: g6e.12xlarge
+        # karpenter.k8s.aws/instance-family: g6e
+      volumes:
+      - name: stable-diffusion-models
+        hostPath:
+          path: /mnt/k8s-disks/0/comfyui-models # Need to sync all models in node's user-data
+      - name: comfyui-inputs
+        persistentVolumeClaim:
+          claimName: comfyui-inputs-pvc
+      - name: comfyui-outputs
+        persistentVolumeClaim:
+          claimName: comfyui-outputs-pvc
+      - name: video-storage
+        hostPath:
+          path: /mnt/k8s-disks/0/videos
+          type: DirectoryOrCreate
+      containers:
+      - name: comfyui
+        image: <your-image>
+        imagePullPolicy: Always
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+          allowPrivilegeEscalation: true
+        ports:
+        - name: http
+          containerPort: 8188
+        volumeMounts:
+        - mountPath: /app/ComfyUI/models
+          name: stable-diffusion-models
+        - mountPath: /app/ComfyUI/input
+          name: comfyui-inputs
+        - mountPath: /app/ComfyUI/output
+          name: comfyui-outputs
+        - mountPath: /app/ComfyUI/output/videos
+          name: video-storage
+        resources:
+          requests:
+            nvidia.com/gpu: 4
+          limits:
+            nvidia.com/gpu: 4
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: comfyui-service
+  labels:
+    app: comfyui
+spec:
+  selector:
+    app: comfyui
+  ports:
+  - port: 8188
+    protocol: TCP
+    targetPort: http
+  type: ClusterIP
+
+---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: comfyui-ingress
+#   annotations:
+#     # alb.ingress.kubernetes.io/group.name: shared-alb
+#     alb.ingress.kubernetes.io/certificate-arn: xxxxxx
+#     alb.ingress.kubernetes.io/target-type: ip
+#     alb.ingress.kubernetes.io/target-group-attributes: stickiness.enabled=true,stickiness.lb_cookie.duration_seconds=300
+#     alb.ingress.kubernetes.io/scheme: internet-facing
+#     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80, "HTTPS": 443 }]'
+# spec:
+#   ingressClassName: alb
+#   rules:
+#     - host: your-host-name
+#       http:
+#         paths:
+#         - path: /
+#           pathType: Prefix
+#           backend:
+#             service:
+#               name: comfyui-service
+#               port:
+#                 number: 8848

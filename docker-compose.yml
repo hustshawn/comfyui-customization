@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  comfyui:
+    build: .
+    ports:
+      - "8848:8188"
+    volumes:
+      - ./models:/app/ComfyUI/models
+      - ./input:/app/ComfyUI/input
+      - ./output:/app/ComfyUI/output
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=3
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
