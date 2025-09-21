@@ -2,15 +2,18 @@ version: '3.8'
 
 services:
   comfyui:
-    build: .
+    build: 
+      context: .
+      args:
+        COMFYUI_VERSION: v0.3.59
     ports:
-      - "8848:8188"
+      - "8188:8188"
     volumes:
       - ./models:/app/ComfyUI/models
       - ./input:/app/ComfyUI/input
       - ./output:/app/ComfyUI/output
     environment:
-      - NVIDIA_VISIBLE_DEVICES=3
+      - NVIDIA_VISIBLE_DEVICES=2
     deploy:
       resources:
         reservations:
