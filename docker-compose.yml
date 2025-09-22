@@ -11,7 +11,10 @@ services:
     volumes:
       - ./models:/app/ComfyUI/models
       - ./input:/app/ComfyUI/input
-      - ./output:/app/ComfyUI/output
+      - ./workflows:/app/ComfyUI/user/default/workflows
+      - ./custom_nodes:/app/ComfyUI/custom_nodes
+      # - ./output:/app/ComfyUI/output
+      - /opt/dlami/nvme/ComfyUI/output:/app/ComfyUI/output
     environment:
       - NVIDIA_VISIBLE_DEVICES=2
     deploy:
