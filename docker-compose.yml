@@ -2,21 +2,16 @@ version: '3.8'
 
 services:
   comfyui:
-    build: 
-      context: .
-      args:
-        COMFYUI_VERSION: v0.3.59
+    build: .
     ports:
       - "8188:8188"
     volumes:
-      - ./models:/app/ComfyUI/models
-      - ./input:/app/ComfyUI/input
-      - ./workflows:/app/ComfyUI/user/default/workflows
-      - ./custom_nodes:/app/ComfyUI/custom_nodes
-      # - ./output:/app/ComfyUI/output
-      - /opt/dlami/nvme/ComfyUI/output:/app/ComfyUI/output
+      - ./workspace:/workspace
+      - comfyui_venv:/opt/venv
+      - pip_cache:/root/.cache/pip
     environment:
-      - NVIDIA_VISIBLE_DEVICES=2
+      - NVIDIA_VISIBLE_DEVICES=ALL
+      - PATH=/opt/venv/bin:$PATH
     deploy:
       resources:
         reservations:
@@ -25,3 +20,7 @@ services:
               count: 1
               capabilities: [gpu]
     restart: unless-stopped
+
+volumes:
+  comfyui_venv:
+  pip_cache:
