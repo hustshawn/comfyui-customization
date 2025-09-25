@@ -1,3 +1,17 @@
+# EBS volume for ComfyUI workspace and venv persistence
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: comfyui-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp3
+  resources:
+    requests:
+      storage: 100Gi
+
+---
 apiVersion: v1
 kind: PersistentVolume
 metadata:
@@ -9,12 +23,13 @@ spec:
     - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
   mountOptions:
     - allow-delete
+    - prefix inputs/
     - region us-west-2
   csi:
     driver: s3.csi.aws.com # required
     volumeHandle: s3-csi-driver-volume-inputs # need to be unique
     volumeAttributes:
-      bucketName: comfyui-inputs-20250915-us-west-2
+      bucketName: comfyui-storage-20250921-us-west-2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -29,7 +44,6 @@ spec:
       storage: 1200Gi # ignored, required
   volumeName: comfyui-inputs-pv
 
-
 ---
 apiVersion: v1
 kind: PersistentVolume
@@ -42,12 +56,13 @@ spec:
     - ReadWriteMany # supported options: ReadWriteMany / ReadOnlyMany
   mountOptions:
     - allow-delete
+    - prefix outputs/
     - region us-west-2
   csi:
     driver: s3.csi.aws.com # required
     volumeHandle: s3-csi-driver-volume-outputs # need to be unique
     volumeAttributes:
-      bucketName: comfyui-outputs-20250915-us-west-2
+      bucketName: comfyui-storage-20250921-us-west-2
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -86,7 +101,10 @@ spec:
         node.kubernetes.io/instance-type: g6e.12xlarge
         # karpenter.k8s.aws/instance-family: g6e
       volumes:
-      - name: stable-diffusion-models
+      - name: comfyui-data
+        persistentVolumeClaim:
+          claimName: comfyui-data-pvc
+      - name: comfyui-models
         hostPath:
           path: /mnt/k8s-disks/0/comfyui-models # Need to sync all models in node's user-data
       - name: comfyui-inputs
@@ -111,13 +129,19 @@ spec:
         - name: http
           containerPort: 8188
         volumeMounts:
-        - mountPath: /app/ComfyUI/models
-          name: stable-diffusion-models
-        - mountPath: /app/ComfyUI/input
+        - mountPath: /workspace
+          name: comfyui-data
+          subPath: workspace
+        - mountPath: /opt/venv
+          name: comfyui-data
+          subPath: venv
+        - mountPath: /workspace/ComfyUI/models
+          name: comfyui-models
+        - mountPath: /workspace/ComfyUI/input
           name: comfyui-inputs
-        - mountPath: /app/ComfyUI/output
+        - mountPath: /workspace/ComfyUI/output
           name: comfyui-outputs
-        - mountPath: /app/ComfyUI/output/videos
+        - mountPath: /workspace/ComfyUI/output/videos
           name: video-storage
         resources:
           requests:
