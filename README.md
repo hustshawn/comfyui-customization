@@ -11,7 +11,7 @@ cd comfyui-customization
 docker compose up --build
 ```
 
-### Kubernetes Deployment
+### Kubernetes Deployment (Optional)
 ```bash
 kubectl apply -f manifest.yaml
 ```
