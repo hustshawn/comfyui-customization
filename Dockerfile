@@ -29,6 +29,9 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Install PyTorch
 RUN pip install --no-cache-dir torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --extra-index-url https://download.pytorch.org/whl/cu121
 
+# Set default ComfyUI version
+ENV COMFYUI_VERSION=v0.3.60
+
 WORKDIR /workspace
 EXPOSE 8188
 

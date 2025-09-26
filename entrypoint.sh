@@ -5,6 +5,8 @@ if [ ! -d "/workspace/ComfyUI" ]; then
     echo "Cloning ComfyUI..."
     git clone https://github.com/comfyanonymous/ComfyUI.git /workspace/ComfyUI
     cd /workspace/ComfyUI
+    echo "Checking out ComfyUI version: ${COMFYUI_VERSION:-v0.3.60}"
+    git checkout ${COMFYUI_VERSION:-v0.3.60}
     pip install -r requirements.txt
 fi
 
