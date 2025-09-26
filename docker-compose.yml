@@ -4,7 +4,7 @@ services:
   comfyui:
     build: .
     ports:
-      - "8189:8188"
+      - "8188:8188"
     volumes:
       - ./ComfyUI:/workspace/ComfyUI
       - comfyui_venv:/opt/venv

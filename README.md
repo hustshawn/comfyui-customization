@@ -25,7 +25,7 @@ kubectl apply -f manifest.yaml
 - **manifest.yaml** - Kubernetes deployment manifest with EBS and S3 storage
 - **qwen-image-models-list.txt** - List of Qwen image model URLs for download
 
-## Storage Architecture
+## k8s Deployment Storage Architecture
 
 ### EBS Volumes
 - **comfyui-data-pvc** (100Gi): Consolidated volume with subpaths
