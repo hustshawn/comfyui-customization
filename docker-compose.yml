@@ -4,9 +4,9 @@ services:
   comfyui:
     build: .
     ports:
-      - "8188:8188"
+      - "8189:8188"
     volumes:
-      - ./workspace:/workspace
+      - ./ComfyUI:/workspace/ComfyUI
       - comfyui_venv:/opt/venv
       - pip_cache:/root/.cache/pip
     environment:
