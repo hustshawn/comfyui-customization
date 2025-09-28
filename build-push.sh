@@ -2,9 +2,12 @@
 set -e
 
 # Default version or use first argument
-COMFYUI_VERSION=${1:-v0.3.40}
-ECR_REPO="985955614379.dkr.ecr.us-west-2.amazonaws.com/comfyui-images"
+COMFYUI_VERSION=${1:-v0.3.59}
 REGION="us-west-2"
+
+# Get AWS account ID dynamically
+AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+ECR_REPO="${AWS_ACCOUNT_ID}.dkr.ecr.${REGION}.amazonaws.com/comfyui-images"
 
 echo "Building ComfyUI ${COMFYUI_VERSION}..."
 
