@@ -26,13 +26,13 @@ RUN apt-get update && apt-get install -y software-properties-common \
 RUN python3.12 -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Install PyTorch
-RUN pip install --no-cache-dir torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --extra-index-url https://download.pytorch.org/whl/cu121
+# Install PyTorch and OpenCV
+RUN pip install --no-cache-dir opencv-python==4.12.0.88 torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --extra-index-url https://download.pytorch.org/whl/cu121
 
 # Set default ComfyUI version
 ENV COMFYUI_VERSION=v0.3.60
 
-WORKDIR /workspace
+WORKDIR /app
 EXPOSE 8188
 
 # Entry script to handle ComfyUI setup

@@ -6,7 +6,7 @@ services:
     ports:
       - "8188:8188"
     volumes:
-      - ./ComfyUI:/workspace/ComfyUI
+      - ./ComfyUI:/app/ComfyUI
       - comfyui_venv:/opt/venv
       - pip_cache:/root/.cache/pip
     environment:
